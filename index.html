@@ -1,0 +1,1997 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Convergence Tool - Measuring Global Development Disparities</title>
+<link rel="canonical" href="https://yanisbkt-econ.github.io/convergence-tool/">
+<link rel="icon" type="image/png" href="Assets/favicon.png">
+<meta name="description" content="This convergence tool estimates how many years it would take countries to converge with a chosen development target, across a range of development indicators.">
+<meta property="og:title" content="Convergence Tool — Measuring Global Development Disparities">
+<meta property="og:description" content="This convergence tool estimates how many years it would take countries to converge with a chosen development target, across a range of development indicators.">
+<meta property="og:image" content="https://yanisbkt-econ.github.io/convergence-tool/Assets/preview.png">
+<meta property="og:url" content="https://yanisbkt-econ.github.io/convergence-tool/">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Convergence Tool — Measuring Global Development Disparities">
+<meta name="twitter:description" content="This convergence tool estimates how many years it would take countries to converge with a chosen development target, across a range of development indicators.">
+<meta name="twitter:image" content="https://yanisbkt-econ.github.io/convergence-tool/Assets/preview.png">
+<meta name="google-site-verification" content="u05AgWizd4rk2UaL6zuzQBx_--_XhtbIrWU4lQy5lpA" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<style>
+:root{
+  --ink:#1A1A1A;
+  --ink-soft:#666666;
+  --paper:#F5F5F3;
+  --paper-raised:#FAFAF8;
+  --line:#E0E0E0;
+  --accent:#841B2D;
+  --accent-wash:rgba(132,27,45,.07);
+
+  --sel-ring:1px;
+
+  --step-x:-2.6rem;
+  --step-size:22px;
+  --gold:var(--accent);
+  --teal:#2F6F62;
+  --rust:var(--accent);
+  --radius:3px;
+}
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'IBM Plex Sans',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{
+    max-width:920px;
+    margin:0 auto;
+    padding:2.5rem 1.5rem 2.2rem;
+  }
+  header.tool-header{
+    margin-bottom:1.8rem;
+  }
+  .eyebrow{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:.72rem;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:var(--gold);
+  margin:0 0 .5rem;
+  font-weight:600;
+}
+  .eyebrow a{
+    color:var(--gold);
+    text-decoration:none;
+    border-bottom:1px solid transparent;
+  }
+  .eyebrow a:hover{
+    border-bottom-color:var(--gold);
+  }
+  .ext-icon{
+  display:inline-block;
+  width:.95em;
+  height:.95em;
+  margin-left:.25em;
+  vertical-align:baseline;
+  position:relative;
+  top:.16em;
+}
+  h1{
+    font-family:'Newsreader',serif;
+    font-weight:500;
+    font-size:1.85rem;
+    line-height:1.25;
+    margin:0 0 .5rem;
+  }
+  .sub{
+    font-size:.92rem;
+    color:var(--ink-soft);
+    line-height:1.55;
+    margin:0;
+  }
+  .controls{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    flex-wrap:wrap;
+    gap:1.3rem 1.5rem;
+    margin-bottom:1.6rem;
+  }
+  .controls .field.target-field{
+    flex:1 1 150px;
+    min-width:0;
+  }
+  .controls .field.target-readout-field{
+    flex:1.7 1 250px;
+    min-width:293px;
+  }
+  .controls .field.target-type-field{
+    flex:0 0 auto;
+  }
+  .controls.variable-controls{
+    padding-bottom:1.4rem;
+    border-bottom:1px solid var(--line);
+  }
+  .controls .field.variable-field,
+  .controls .field.variable-desc-field{
+    flex:0 1 380px;
+  }
+  .stacked-row{ margin-top:1.15rem; }
+  .readout{
+    display:flex;
+    align-items:center;
+    gap:.4rem;
+    white-space:nowrap;
+    padding:.4rem .7rem;
+    min-height:2.54rem;
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    background:var(--paper-raised);
+    font-family:'IBM Plex Sans',sans-serif;
+    font-size:.82rem;
+    line-height:1.2;
+    cursor:default;
+    overflow:hidden;
+  }
+  .readout-sep{ color:var(--ink-soft); opacity:.55; }
+  .readout-key{ color:var(--ink-soft); }
+  .readout-val{ color:var(--ink); font-weight:600; font-variant-numeric:tabular-nums; }
+
+  .variable-desc{
+    margin:0;
+    font-size:.82rem;
+    line-height:1.5;
+    color:var(--ink-soft);
+  }
+  .desc-switch .desc-opt{
+    font:inherit;
+    letter-spacing:inherit;
+    text-transform:inherit;
+    background:none;
+    border:0;
+    padding:0;
+    margin:0;
+    line-height:inherit;
+    vertical-align:baseline;
+    cursor:pointer;
+    color:var(--ink-soft);
+    font-weight:400;
+  }
+  .desc-switch .desc-opt[aria-pressed="true"]{
+    color:var(--accent);
+    font-weight:600;
+  }
+  .desc-switch .desc-opt:not([aria-pressed="true"]){
+    text-decoration:underline;
+    text-decoration-thickness:1px;
+    text-underline-offset:3px;
+  }
+  .desc-switch .desc-opt:hover{ color:var(--accent); }
+  .desc-switch .desc-sep{ color:var(--ink-soft); opacity:.55; margin:0 .4rem; }
+  .variable-desc a, .variable-desc a:visited,
+  .footnote-block a, .footnote-block a:visited,
+  .site-footer-inner a, .site-footer-inner a:visited{
+    color:var(--accent);
+    text-decoration:underline;
+    text-decoration-thickness:1px;
+    text-underline-offset:2px;
+  }
+  .variable-desc a:hover,
+  .footnote-block a:hover,
+  .site-footer-inner a:hover{ text-decoration-thickness:2px; }
+  @media(max-width:640px){
+    .controls .field.target-field,
+    .controls .field.target-type-field,
+    .controls .field.target-readout-field,
+    .controls .field.variable-field,
+    .controls .field.variable-desc-field{ flex-basis:100%; }
+  }
+  .field label.field-label,
+  .field .field-label.desc-switch{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.68rem;
+    letter-spacing:.06em;
+    word-spacing:-.15em;
+    text-transform:uppercase;
+    color:var(--accent);
+    margin-bottom:.45rem;
+    line-height:1;
+    font-weight:600;
+  }
+  /* Browsers italicise optgroup labels by default; the bold alone is enough to
+     mark a group here. The reset is repeated on the options because some engines
+     let them inherit the italic from the group. */
+  optgroup{
+    font-style:normal;
+    font-weight:600;
+  }
+  optgroup option{ font-style:normal; font-weight:400; }
+  select{
+    width:100%;
+    font-family:'IBM Plex Sans',sans-serif;
+    font-size:.92rem;
+    padding:.55rem .6rem;
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    background:var(--paper-raised);
+    color:var(--ink);
+  }
+  .checks{
+    display:flex;
+    flex-wrap:wrap;
+    gap:.4rem .6rem;
+    max-height:180px;
+    overflow-y:auto;
+    padding:.3rem 0;
+    scrollbar-width:thin;
+    scrollbar-color:var(--ink-soft) var(--line);
+  }
+  @supports selector(::-webkit-scrollbar){
+    .checks{ scrollbar-width:auto; scrollbar-color:auto; }
+    .checks::-webkit-scrollbar{ width:9px; }
+    .checks::-webkit-scrollbar-track{
+      background:var(--line);
+      border-radius:var(--radius);
+    }
+    .checks::-webkit-scrollbar-thumb{
+      background:var(--ink-soft);
+      border-radius:var(--radius);
+    }
+    .checks::-webkit-scrollbar-thumb:hover{ background:var(--ink); }
+    .checks::-webkit-scrollbar-button{ display:none; }
+  }
+  .chk{ position:relative; }
+  .chk input{ position:absolute; opacity:0; inset:0; cursor:pointer; }
+  .chk span{
+    display:inline-block;
+    padding:.35rem .7rem;
+    font-size:.85rem;
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    background:var(--paper-raised);
+    color:var(--ink-soft);
+    transition:all .15s ease;
+  }
+  .chk input:checked + span{
+    background:var(--paper-raised);
+    border-color:var(--accent);
+    color:var(--ink);
+    box-shadow:inset 0 0 0 calc(var(--sel-ring) - 1px) var(--accent);
+  }
+  .chk input:disabled:not(:checked) + span{ opacity:.35; }
+  .selected-block{
+    padding-bottom:.9rem;
+    margin-bottom:.9rem;
+    border-bottom:1px solid var(--line);
+  }
+
+  .selected-chips{
+    display:flex;
+    flex-wrap:wrap;
+    gap:.4rem .6rem;
+    min-height:1.9rem;
+  }
+  .selected-empty{
+    font-size:.8rem;
+    color:var(--ink-soft);
+    line-height:1.9rem;
+  }
+  .sel-chip{
+    display:inline-flex;
+    align-items:center;
+    gap:.45rem;
+    padding:.35rem .55rem .35rem .7rem;
+    font-family:'IBM Plex Sans',sans-serif;
+    font-size:.85rem;
+    line-height:1.2;
+    border:1px solid var(--accent);
+    border-radius:var(--radius);
+    background:var(--paper-raised);
+    color:var(--ink);
+    box-shadow:inset 0 0 0 calc(var(--sel-ring) - 1px) var(--accent);
+    cursor:pointer;
+    transition:background .15s ease, color .15s ease;
+  }
+  .sel-chip:hover, .sel-chip:focus-visible{
+    background:var(--accent-wash);
+    color:var(--accent);
+  }
+  .sel-chip .x{
+    font-family:'IBM Plex Sans',sans-serif;
+    font-size:.7rem;
+    opacity:.8;
+  }
+  .sel-chip:hover .x{ opacity:1; }
+.panel{
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:1rem 1.1rem;
+  margin-bottom:1.6rem;
+}
+.panel-title{
+  margin:0;
+  font-family:'Newsreader',serif;
+  font-weight:500;
+  font-size:1.15rem;
+  line-height:1.3;
+  letter-spacing:0;
+  text-transform:none;
+  color:var(--ink);
+  text-decoration:underline;
+  text-decoration-thickness:1px;
+  text-underline-offset:6px;
+}
+.panel > .panel-title{ margin-bottom:1.1rem; }
+.step-marker{ display:none; }
+
+@media (min-width:1060px){
+  .panel[data-step]{ position:relative; }
+  .panel[data-step]::before{
+    content:'';
+    position:absolute;
+    left:calc(var(--step-x) + var(--step-size) / 2);
+    top:-1px;
+    bottom:calc(-1.6rem - 1px);
+    width:1px;
+    background:var(--accent);
+    pointer-events:none;
+  }
+  .panel[data-step="1"]::before{ top:28px; }
+  .panel[data-step="4"]::before{ bottom:auto; height:29px; }
+  .step-marker{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:absolute;
+    left:var(--step-x);
+    top:17px;
+    width:var(--step-size);
+    height:var(--step-size);
+    border:1px solid var(--accent);
+    border-radius:50%;
+    background:var(--paper);
+    color:var(--accent);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.68rem;
+    line-height:1;
+    pointer-events:none;
+    user-select:none;
+  }
+}
+
+.panel > .controls:last-child{ margin-bottom:0; }
+.subtle-label{
+  display:block;
+  font-family:'IBM Plex Sans',sans-serif;
+  font-size:.78rem;
+  font-weight:400;
+  letter-spacing:0;
+  text-transform:none;
+  color:var(--ink-soft);
+  margin-bottom:.55rem;
+}
+  .field-label-row{
+    display:flex;
+    align-items:center;
+    gap:.4rem;
+    margin-bottom:.45rem;
+    line-height:1;
+  }
+  .field-label-row .field-label{ margin-bottom:0; }
+  .field-label-row:has(.info-icon){ align-items:flex-end; }
+  .field-label-row.spread{ justify-content:space-between; flex-wrap:wrap; gap:.6rem; }
+  .compare-panel .field-label-row.spread{ margin-bottom:.55rem; }
+  .field-label-row .subtle-label{ margin-bottom:0; }
+  #targetFiguresLabel{
+    display:flex;
+    gap:.35em;
+    min-width:0;
+    overflow:hidden;
+    white-space:nowrap;
+  }
+  #targetFiguresLabel .snap-name{
+    min-width:0;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  #targetFiguresLabel .snap-suffix{ flex:0 0 auto; }
+  .info-icon{
+    position:relative;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:14px;
+    height:14px;
+    border-radius:50%;
+    border:1px solid var(--ink-soft);
+    color:var(--ink-soft);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.6rem;
+    line-height:1;
+    cursor:help;
+    flex-shrink:0;
+    transform:translateY(-5.4px);
+  }
+  .controls .field:not(:first-child) .info-icon .tooltip{
+    left:auto;
+    right:0;
+  }
+  .info-icon .tooltip{
+    visibility:hidden;
+    opacity:0;
+    position:absolute;
+    bottom:145%;
+    left:0;
+    background:var(--ink);
+    color:var(--paper-raised);
+    font-family:'IBM Plex Sans',sans-serif;
+    font-size:.74rem;
+    font-weight:400;
+    text-transform:none;
+    letter-spacing:normal;
+    line-height:1.45;
+    padding:.6rem .75rem;
+    border-radius:var(--radius);
+    width:230px;
+    transition:opacity .15s ease;
+    z-index:20;
+    pointer-events:none;
+  }
+  .info-icon:hover .tooltip,
+  .info-icon:focus .tooltip{
+    visibility:visible;
+    opacity:1;
+  }
+  .search-box{
+    position:relative;
+    display:flex;
+    align-items:center;
+  }
+  .search-box svg{
+    position:absolute;
+    left:.6rem;
+    width:13px;
+    height:13px;
+    stroke:var(--ink-soft);
+    pointer-events:none;
+  }
+  .search-box input{
+    font-family:'IBM Plex Sans',sans-serif;
+    font-size:.82rem;
+    padding:.4rem .6rem .4rem 1.9rem;
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    background:var(--paper-raised);
+    color:var(--ink);
+    width:190px;
+  }
+  .search-box input:focus{
+    outline:none;
+    border-color:var(--ink-soft);
+  }
+  .search-box input::placeholder{ color:var(--ink-soft); opacity:.7; }
+  .compare-actions{
+    display:flex;
+    align-items:center;
+    gap:.6rem;
+  }
+  .reset-btn{
+    font-family:'IBM Plex Sans',sans-serif;
+    font-size:.82rem;
+    padding:.4rem .8rem;
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    background:var(--paper-raised);
+    color:var(--ink-soft);
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .reset-btn:hover{
+    border-color:var(--ink-soft);
+    color:var(--ink);
+  }
+  .segmented{
+    display:inline-flex;
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    overflow:hidden;
+  }
+  .segmented button{
+    position:relative;
+    font-family:'IBM Plex Sans',sans-serif;
+    font-size:.85rem;
+    padding:.4rem .95rem;
+    border:none;
+    background:var(--paper-raised);
+    color:var(--ink-soft);
+    cursor:pointer;
+  }
+  .segmented button + button::before{
+    content:"·";
+    position:absolute;
+    left:0;
+    top:50%;
+    transform:translate(-50%,-50%);
+    color:var(--ink-soft);
+    opacity:.55;
+    pointer-events:none;
+  }
+  .segmented button.active::before,
+  .segmented button.active + button::before{ content:none; }
+  .segmented button:disabled{
+    color:var(--ink-soft);
+    opacity:.4;
+    cursor:not-allowed;
+  }
+  .segmented button.active{
+    background:var(--paper-raised);
+    color:var(--ink);
+    box-shadow:inset 0 0 0 var(--sel-ring) var(--accent);
+    border-radius:var(--radius);
+  }
+  .row-bar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:.8rem;
+    margin:1.6rem 0 1rem;
+  }
+  .panel > .row-bar{ margin-top:0; }
+  .view-toggle{
+    display:inline-flex;
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    overflow:hidden;
+  }
+  .view-toggle button{
+    font-family:'IBM Plex Sans',sans-serif;
+    font-size:.85rem;
+    padding:.5rem 1.1rem;
+    border:none;
+    background:transparent;
+    color:var(--ink);
+    cursor:pointer;
+  }
+  .raw-btn{
+    font-family:'IBM Plex Sans',sans-serif;
+    font-size:.85rem;
+    padding:.5rem 1.1rem;
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    background:var(--paper-raised);
+    color:var(--ink-soft);
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .raw-btn:hover{ border-color:var(--ink-soft); color:var(--ink); }
+  .raw-status{
+    padding:2.5rem 0;
+    text-align:center;
+    font-family:'IBM Plex Sans',sans-serif;
+    font-size:.85rem;
+    color:var(--ink-soft);
+  }
+  .raw-status.error{ color:var(--rust); }
+  .view-toggle button.active{
+    background:var(--paper-raised);
+    box-shadow:inset 0 0 0 var(--sel-ring) var(--accent);
+  }
+  table{
+    width:100%;
+    table-layout:fixed;
+    border-collapse:collapse;
+    background:var(--paper-raised);
+    border:1px solid var(--line);
+  }
+  thead th{
+    text-align:left;
+    vertical-align:middle;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.68rem;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    padding:.7rem .8rem;
+    border-bottom:1px solid var(--line);
+  }
+  tbody td{
+    padding:.75rem .8rem;
+    font-size:.9rem;
+    border-bottom:1px solid var(--line);
+  }
+  tbody tr:last-child td{ border-bottom:none; }
+  td.num, th.num{
+  font-variant-numeric:tabular-nums;
+  text-align:center;
+}
+  td.num{ font-family:'IBM Plex Sans',sans-serif; }
+  th.num{ font-family:'IBM Plex Mono',monospace; }
+  .country-cell{ font-weight:500; }
+  .badge-never{
+    color:var(--rust);
+    font-family:'IBM Plex Sans',sans-serif;
+    font-size:.82rem;
+    font-weight:600;
+  }
+  .badge-years{
+    color:var(--teal);
+    font-family:'IBM Plex Sans',sans-serif;
+    font-weight:600;
+  }
+  .graph-panel{
+    background:var(--paper-raised);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:1.2rem 1.3rem 1rem;
+  }
+  .auto-read-cell{
+    padding:0 .8rem .8rem;
+  }
+  .auto-read-panel{
+    border-top:1px solid var(--line);
+    padding-top:.85rem;
+    margin-top:.9rem;
+  }
+  .auto-read-toggle{
+    display:inline-flex;
+    align-items:center;
+    gap:.4rem;
+    background:none;
+    border:none;
+    padding:0;
+    margin:0;
+    font:inherit;
+    cursor:pointer;
+  }
+  .auto-read-toggle-text{
+    font-family:'Newsreader',serif;
+    font-style:italic;
+    font-size:.88rem;
+    color:var(--ink-soft);
+  }
+  .auto-read-toggle-icon{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    flex-shrink:0;
+    width:9px;
+    height:9px;
+    color:var(--gold);
+    transition:transform .18s ease, opacity .15s ease;
+  }
+  .auto-read-toggle-icon svg{ width:100%; height:100%; fill:currentColor; }
+  .auto-read-toggle:hover .auto-read-toggle-icon{ opacity:.65; }
+  .auto-read-toggle[aria-expanded="true"] .auto-read-toggle-icon{ transform:rotate(90deg); }
+  .auto-read{
+    margin-top:.75rem;
+    font-family:'Newsreader',serif;
+    font-size:.88rem;
+    line-height:1.35;
+    color:var(--ink);
+  }
+  .auto-read-list{
+    margin:0;
+    padding-left:1.2rem;
+    display:flex;
+    flex-direction:column;
+    gap:.55rem;
+  }
+  .auto-read-row{ list-style:disc; }
+  .auto-read-row::marker{ color:var(--ink-soft); }
+  .auto-read-label{
+    text-decoration:underline;
+    text-decoration-thickness:1px;
+    text-underline-offset:3px;
+  }
+  .auto-read .years{ color:var(--teal); font-weight:600; }
+  .auto-read .never{ color:var(--rust); font-weight:600; }
+  .graph-mode{
+    display:flex;
+    justify-content:flex-end;
+    margin-bottom:.6rem;
+  }
+  canvas{ max-height:400px; }
+  .chart-note{
+    font-size:.74rem;
+    color:var(--ink-soft);
+    line-height:1.55;
+    margin:.9rem 0 0;
+  }
+.footnote-block p{
+  font-size:.74rem;
+  color:var(--ink-soft);
+  line-height:1.6;
+  margin:0 0 .9rem;
+}
+.footnote-block p:last-child{
+  margin-bottom:0;
+}
+.footnote-block strong{
+  color:var(--ink);
+  font-weight:600;
+}
+  .site-footer{
+    border-top:1px solid var(--ink);
+    background:#FFFFFF;
+  }
+  .site-footer-inner{
+    max-width:920px;
+    margin:0 auto;
+    padding:1rem 1.5rem;
+    font-size:.72rem;
+    font-weight:300;
+    color:var(--ink-soft);
+  }
+  .status{
+    padding:2rem 0;
+    text-align:center;
+    color:var(--ink-soft);
+    font-family:'IBM Plex Sans',sans-serif;
+    font-size:.85rem;
+  }
+  .status.error{ color:var(--rust); }
+  .hidden{ display:none; }
+</style>
+</head>
+<body>
+<svg style="display:none;">
+  <symbol id="icon-ext-link" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+    <polyline points="15 3 21 3 21 9"></polyline>
+    <line x1="10" y1="14" x2="21" y2="3"></line>
+  </symbol>
+</svg>
+<div class="wrap">
+
+  <header class="tool-header">
+    <p class="eyebrow">Convergence tool · Measuring global development disparities · <a href="https://github.com/yanisbkt-econ/convergence-tool" target="_blank" rel="noopener noreferrer">Browse the public repository<svg class="ext-icon"><use href="#icon-ext-link"></use></svg></a></p>
+    <h1>How long would it take for countries to catch up in development?</h1>
+    <p class="sub">This interactive tool estimates how long it would take countries to converge with a chosen target, across a range of development indicators. The target can be another country, an income or human development group, or the world average. Data run through <span class="js-base-year">2023</span>. Each area is then projected forward from that level at a constant rate, equal to the average annual rate it recorded over the preceding years. The length of the window over which that rate is computed is yours to choose. Two convergence scenarios are provided: a <em>static</em> one, where the target stays fixed at its <span class="js-base-year">2023</span> level, and a <em>dynamic</em> one, where it keeps growing at its own rate, just like the comparison countries.</p>
+  </header>
+
+  <div id="loadingStatus" class="status">Loading data…</div>
+
+  <div id="appRoot" class="hidden">
+
+    <section class="panel" data-step="1" aria-labelledby="paramsTitle">
+      <span class="step-marker" aria-hidden="true">1</span>
+      <h2 class="panel-title" id="paramsTitle">Configure your comparison</h2>
+
+      <div class="controls variable-controls">
+        <div class="field variable-field">
+          <div class="field-label-row">
+            <label class="field-label">Variable</label>
+            <span class="info-icon" tabindex="0">i<span class="tooltip">This selects the indicator the convergence exercise is run on.</span></span>
+          </div>
+          <select id="variableSelect"></select>
+
+          <div class="field-label-row stacked-row">
+            <label class="field-label">Growth Rate Window</label>
+            <span class="info-icon" tabindex="0">i<span class="tooltip">This selects the number of years back from <span class="js-base-year">2023</span> used to compute each country's average annual growth rate, which is then extrapolated forward at that constant rate. Shorter windows are more sensitive to short-term shocks (recessions, commodity price swings, health crises, etc.), while longer windows are supposed to smooth these out to reflect a more structural growth trend.</span></span>
+          </div>
+          <div class="segmented" id="nSegment"></div>
+        </div>
+        <div class="field variable-desc-field">
+          <div class="field-label-row">
+            <div class="field-label desc-switch" id="descSwitch"></div>
+          </div>
+          <p class="variable-desc" id="variableDesc"></p>
+        </div>
+      </div>
+
+      <div class="controls">
+        <div class="field target-type-field">
+          <div class="field-label-row">
+            <label class="field-label">Target type</label>
+            <span class="info-icon" tabindex="0">i<span class="tooltip">This determines what the target selection on the right may hold. Choosing 'Benchmark' runs the convergence exercise against a given income or development group. Choosing 'Country' runs it against an individual country, and choosing 'World' runs it against the global aggregate.</span></span>
+          </div>
+          <div class="segmented" id="targetTypeSegment"></div>
+        </div>
+        <div class="field target-field">
+          <div class="field-label-row">
+            <label class="field-label">Target</label>
+            <span class="info-icon" tabindex="0">i<span class="tooltip">This lets you choose the specific target against which convergence is assessed, within the type selected on the left. When Target type is set to Benchmark, the available options correspond to World Bank income groups or UNDP development groups. Each benchmark is typically an aggregate computed by the source provider over the countries belonging to that group in 2023. Its level and growth rate are reported alongside, on the right.</span></span>
+          </div>
+          <select id="targetSelect"></select>
+        </div>
+        <div class="field target-readout-field">
+          <div class="field-label-row">
+            <label class="field-label" id="targetFiguresLabel"><span class="snap-name" id="targetFiguresName">Target</span><span class="snap-suffix">snapshot (<span id="targetFiguresRange"></span>)</span></label>
+            <span class="info-icon" tabindex="0">i<span class="tooltip" id="targetFiguresTip"></span></span>
+          </div>
+          <div class="readout" id="targetReadout" aria-live="polite"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel compare-panel" data-step="2" aria-labelledby="countriesTitle">
+      <span class="step-marker" aria-hidden="true">2</span>
+      <h2 class="panel-title" id="countriesTitle">Countries to compare (max 7)</h2>
+      <div class="selected-block">
+        <div class="field-label-row spread">
+          <span class="subtle-label" id="selectedLabel"></span>
+          <div class="compare-actions">
+            <button type="button" id="resetCountries" class="reset-btn">Reset selection</button>
+            <div class="search-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="7"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input type="text" id="countrySearch" placeholder="Search country…">
+            </div>
+          </div>
+        </div>
+        <div class="selected-chips" id="selectedChips"></div>
+      </div>
+      <div class="checks" id="countryChecks"></div>
+    </section>
+
+    <section class="panel" data-step="3" aria-labelledby="resultsTitle">
+      <span class="step-marker" aria-hidden="true">3</span>
+      <h2 class="panel-title" id="resultsTitle">Years needed to close the gap</h2>
+
+      <div class="row-bar">
+        <div class="view-toggle" id="viewToggle">
+          <button data-view="table" class="active">Table</button>
+          <button data-view="graph">Graph</button>
+        </div>
+        <button type="button" class="raw-btn" id="rawToggle" aria-controls="rawView">View raw historical series</button>
+      </div>
+
+      <div id="tableView">
+        <table>
+          <colgroup>
+            <col style="width:14%">
+            <col style="width:21%">
+            <col style="width:25%">
+            <col style="width:20%">
+            <col style="width:20%">
+          </colgroup>
+          <thead>
+            <tr>
+              <th>Country</th>
+              <th class="num" id="valueHeader"></th>
+              <th class="num">Average annual growth rate between <span id="nRangeLabel"></span></th>
+              <th class="num">Years to catch up<br>(Static scenario)</th>
+              <th class="num">Years to catch up<br>(Dynamic scenario)</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+          <tfoot>
+            <tr>
+              <td class="auto-read-cell" id="autoReadTableSlot" colspan="5">
+                <div class="auto-read-panel" id="autoReadPanel">
+                  <button type="button" class="auto-read-toggle" id="autoReadToggle" aria-expanded="false" aria-controls="autoRead">
+                    <span class="auto-read-toggle-icon" aria-hidden="true">
+                      <svg viewBox="0 0 24 24"><polygon points="8,5 19,12 8,19"></polygon></svg>
+                    </span>
+                    <span class="auto-read-toggle-text">Click to expand the interpretation of these results.</span>
+                  </button>
+                  <div class="auto-read" id="autoRead" hidden></div>
+                </div>
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <div id="rawView" class="hidden">
+        <div class="graph-panel">
+          <div class="raw-status hidden" id="rawStatus"></div>
+          <canvas id="rawChart"></canvas>
+          <p class="chart-note" id="rawNote"></p>
+        </div>
+      </div>
+
+      <div id="graphView" class="hidden">
+        <div class="graph-panel" id="graphPanel">
+          <div class="graph-mode">
+            <div class="segmented" id="modeSegment"></div>
+          </div>
+          <canvas id="chart"></canvas>
+          <p class="chart-note">Note: The vertical axis is on a log scale, so a constant growth rate plots as a straight line and a catch-up is simply the point where two lines meet. The horizontal axis still runs to whichever comparison country takes the longest, so a country that catches up quickly occupies only a narrow slice on the left.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel footnote-block" data-step="4" aria-labelledby="notesTitle">
+      <span class="step-marker" aria-hidden="true">4</span>
+      <h2 class="panel-title" id="notesTitle">Notes and related literature</h2>
+  <p><strong>Objective and interpretation.</strong> The aim of the tool is to assess whether recent trajectories have been fast enough to close existing gaps and to make the scale of the remaining effort visible. Bear in mind that it is in no way a credible forecast, as constant growth is never a realistic long-run assumption.</p>
+
+  <p><strong>Methodological note.</strong> The number of years required to close the gap is estimated from each country's average annual (geometric) growth rate computed over the selected window. This rate is extrapolated forward at a constant pace, starting from each country's own <span class="js-base-year">2023</span> level. Projected levels far out on the horizon should therefore be read as a simple extrapolation, not a forecast. The underlying equations are detailed in the front page of the <a href="https://github.com/yanisbkt-econ/convergence-tool#method" target="_blank" rel="noopener noreferrer">public repository</a>.</p>
+
+  <p><strong>Important aspect.</strong> Development is a multidimensional concept, and one must be aware of the limitations of each indicator used. For instance, GDP per capita only captures the monetary dimension of development and still remains an imperfect proxy for it. A high gross domestic product per capita says nothing about how that income is distributed among the population (assumed here to be uniform) and may conceal important inequalities. What is ultimately done with that income matters perhaps as much as its level. As such, accounting for other dimensions (education, health, and so on) is equally important, and additional variables are provided to that end. Keep in mind, however, that these indicators (e.g., mean years of schooling) also carry limitations. Future releases might incorporate additional indicators to provide a more comprehensive view. </p>
+
+    <p><strong>Related literature.</strong> For a more realistic approximation of income convergence, beta-convergence models let the speed of catch-up slow down as the gap narrows. See, for example: <a href="https://www.jstor.org/stable/2138606" target="_blank" rel="noopener noreferrer">Barro and sala-i-martin (1992)</a>, <a href="https://doi.org/10.1111/ecoj.12247" target="_blank" rel="noopener noreferrer">Barro (2015)</a>, <a href="https://doi.org/10.1257/jel.20181207" target="_blank" rel="noopener noreferrer">Johnson and Papageorgiou (2020)</a>, <a href="https://doi.org/10.1016/j.jdeveco.2021.102687" target="_blank" rel="noopener noreferrer">Patel et al., (2021)</a> or this recent <a href="https://www.chat-gdp.org/p/we-were-wrong-about-convergence" target="_blank" rel="noopener noreferrer">blog post (2025)</a>.</p>
+    </section>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="site-footer-inner">© 2026, <a href="https://yanisbkt-econ.github.io/" target="_blank" rel="noopener noreferrer">Yanis Bekhti</a>. Last update: 24/08/2026. Feel free to browse the <a href="https://github.com/yanisbkt-econ/convergence-tool" target="_blank" rel="noopener noreferrer">public repository</a> and open issues.</div>
+</footer>
+
+<script>
+const VARIABLES = [
+{
+  key: 'gdppc',
+  category: 'Economic',
+  short: 'GDP per capita',
+  benchmarkDefault: 'High income',
+  csv: 'Data/Convergence_tool/WB_gdppc_convergence.csv',
+  series: 'Data/Time_series/WB_gdppc_timeseries.csv',
+  label: 'GDP per capita (constant 2021 int. $, PPP)',
+  definition: `Gross Domestic Product (GDP) per capita is expressed in constant 2021 international dollars at purchasing power parity (PPP). Figures are therefore adjusted for inflation, so levels are comparable over time, while PPP adjusts for price-level differences between countries, so a dollar buys the same basket of goods everywhere.`,
+  source: `<strong>Source:</strong> World Bank's World Development Indicators.<br>
+  <strong>Webpage:</strong> Consult the <a href="https://data.worldbank.org/indicator/NY.GDP.PCAP.PP.KD" target="_blank" rel="noopener noreferrer">indicator page</a> for more information.<br>
+  <strong>Download date:</strong> 14 August 2026.<br>
+  <strong>Area names:</strong> Harmonised to follow the <a href="https://unstats.un.org/unsd/methodology/m49/" target="_blank" rel="noopener noreferrer">UNSD M49 standard</a>.`,
+  format: v => '$' + nf(v)
+},
+{
+  key: 'le',
+  category: 'Health',
+  short: 'Life expectancy',
+  benchmarkDefault: 'Very high human development',
+  csv: 'Data/Convergence_tool/UNDP_le_convergence.csv',
+  series: 'Data/Time_series/UNDP_le_timeseries.csv',
+  label: 'Life expectancy at birth (years)',
+  definition: `Life expectancy at birth is the number of years a newborn in a given year (i.e., 2023) could expect to live if the age-specific mortality rates observed that year were held constant for the rest of its life. It is a summary of current mortality conditions across all ages, not a forecast for any individual or generation.`,
+  source: `<strong>Source:</strong> UNDP, Human Development Report 2025.<br>
+  <strong>Webpage:</strong> Consult the <a href="https://hdr.undp.org/data-center/documentation-and-downloads" target="_blank" rel="noopener noreferrer">source page</a> for more information.<br>
+  <strong>Download date:</strong> 13 August 2026.<br>
+  <strong>Area names:</strong> Harmonised to follow the <a href="https://unstats.un.org/unsd/methodology/m49/" target="_blank" rel="noopener noreferrer">UNSD M49 standard</a>.`,
+  format: v => v.toFixed(1) + ' yrs'
+},
+{
+  key: 'mys',
+  category: 'Education',
+  short: 'Mean years of schooling',
+  benchmarkDefault: 'Very high human development',
+  csv: 'Data/Convergence_tool/UNDP_mys_convergence.csv',
+  series: 'Data/Time_series/UNDP_mys_timeseries.csv',
+  label: 'Mean years of schooling (years)',
+  definition: `Mean years of schooling is the average number of years of education completed by the population aged 25 and older, based on educational attainment reported in censuses and surveys. It measures the stock of education already accumulated by adults.`,
+  source: `<strong>Source:</strong> UNDP, Human Development Report 2025.<br>
+  <strong>Webpage:</strong> Consult the <a href="https://hdr.undp.org/data-center/documentation-and-downloads" target="_blank" rel="noopener noreferrer">source page</a> for more information.<br>
+  <strong>Download date:</strong> 13 August 2026.<br>
+  <strong>Area names:</strong> Harmonised to follow the <a href="https://unstats.un.org/unsd/methodology/m49/" target="_blank" rel="noopener noreferrer">UNSD M49 standard</a>.`,
+  format: v => v.toFixed(1) + ' yrs'
+},
+{
+  key: 'gnipc',
+  category: 'Economic',
+  short: 'GNI per capita',
+  benchmarkDefault: 'Very high human development',
+  csv: 'Data/Convergence_tool/UNDP_gnipc_convergence.csv',
+  series: 'Data/Time_series/UNDP_gnipc_timeseries.csv',
+  label: 'GNI per capita (constant 2021 int. $, PPP)',
+  definition: `Gross National Income (GNI) per capita is the total income earned by a country's residents, wherever it is generated, divided by population. It differs from GDP per capita wherever cross-border wages or investment income are large. It is expressed in constant 2021 international dollars at purchasing power parity (PPP).`,
+  source: `<strong>Source:</strong> UNDP, Human Development Report 2025.<br>
+  <strong>Webpage:</strong> Consult the <a href="https://hdr.undp.org/data-center/documentation-and-downloads" target="_blank" rel="noopener noreferrer">source page</a> for more information.<br>
+  <strong>Download date:</strong> 13 August 2026.<br>
+  <strong>Area names:</strong> Harmonised to follow the <a href="https://unstats.un.org/unsd/methodology/m49/" target="_blank" rel="noopener noreferrer">UNSD M49 standard</a>.`,
+  format: v => '$' + nf(v)
+},
+{
+  key: 'hdi',
+  category: 'Index',
+  short: 'HDI',
+  bounded: true,
+  benchmarkDefault: 'Very high human development',
+  csv: 'Data/Convergence_tool/UNDP_hdi_convergence.csv',
+  series: 'Data/Time_series/UNDP_hdi_timeseries.csv',
+  label: 'Human Development Index (HDI)',
+  definition: `Human Development Index (HDI) measures human development achievement in three dimensions: a long and healthy life, knowledge, and a decent standard of living. It is computed as the geometric mean of normalised indices for these three dimensions. Higher values indicate better outcomes, in this case a higher level of human development.`, 
+  source: `<strong>Source:</strong> UNDP, Human Development Report 2025.<br>
+  <strong>Webpage:</strong> Consult the <a href="https://hdr.undp.org/data-center/documentation-and-downloads" target="_blank" rel="noopener noreferrer">source page</a> for more information.<br>
+  <strong>Download date:</strong> 13 August 2026.<br>
+  <strong>Area names:</strong> Harmonised to follow the <a href="https://unstats.un.org/unsd/methodology/m49/" target="_blank" rel="noopener noreferrer">UNSD M49 standard</a>.`,
+  format: v => v.toFixed(3)
+},
+{
+  key: 'eys',
+  category: 'Education',
+  short: 'Expected years of schooling',
+  benchmarkDefault: 'Very high human development',
+  csv: 'Data/Convergence_tool/UNDP_eys_convergence.csv',
+  series: 'Data/Time_series/UNDP_eys_timeseries.csv',
+  label: 'Expected years of schooling (years)',
+  definition: `Expected years of schooling is the number of years of schooling a child entering school today (i.e., 2023) could expect to receive if current enrolment patterns at each level persisted throughout their life. Unlike mean years of schooling, which reflects past attainment among today's adults, this indicator reflects current enrolment patterns. It reacts immediately to changes in the education system.`,
+  source: `<strong>Source:</strong> UNDP, Human Development Report 2025.<br>
+  <strong>Webpage:</strong> Consult the <a href="https://hdr.undp.org/data-center/documentation-and-downloads" target="_blank" rel="noopener noreferrer">source page</a> for more information.<br>
+  <strong>Download date:</strong> 13 August 2026.<br>
+  <strong>Area names:</strong> Harmonised to follow the <a href="https://unstats.un.org/unsd/methodology/m49/" target="_blank" rel="noopener noreferrer">UNSD M49 standard</a>.`,
+  format: v => v.toFixed(1) + ' yrs'
+},
+{
+  key: 'ihdi',
+  category: 'Index',
+  short: 'IHDI',
+  bounded: true,
+  benchmarkDefault: 'Very high human development',
+  csv: 'Data/Convergence_tool/UNDP_ihdi_convergence.csv',
+  series: 'Data/Time_series/UNDP_ihdi_timeseries.csv',
+  label: 'Inequality-adjusted Human Development Index (IHDI)',
+  definition: `The Inequality-adjusted HDI (IHDI) adjusts the standard Human Development Index (HDI) for inequality in the distribution across the population. As with the HDI, higher values indicate better outcomes, in this case a smaller loss of human development to inequality. It equals the HDI when there is no inequality but falls below it as inequality rises, so a country's IHDI can never exceed its own HDI.`,
+  source: `<strong>Source:</strong> UNDP, Human Development Report 2025.<br>
+  <strong>Webpage:</strong> Consult the <a href="https://hdr.undp.org/data-center/documentation-and-downloads" target="_blank" rel="noopener noreferrer">source page</a> for more information.<br>
+  <strong>Download date:</strong> 13 August 2026.<br>
+  <strong>Area names:</strong> Harmonised to follow the <a href="https://unstats.un.org/unsd/methodology/m49/" target="_blank" rel="noopener noreferrer">UNSD M49 standard</a>.`,
+  format: v => v.toFixed(3)
+},
+{
+  key: 'gii_inv',
+  category: 'Index',
+  short: 'Inverted Gender Inequality Index',
+  bounded: true,
+  benchmarkDefault: 'Very high human development',
+  csv: 'Data/Convergence_tool/UNDP_gii_inv_convergence.csv',
+  series: 'Data/Time_series/UNDP_gii_inv_timeseries.csv',
+  label: 'Gender Inequality Index (1 − GII)',
+  definition: `Gender Inequality Index (GII) measures gender-based disparities in three dimensions: reproductive health, empowerment, and labour-market participation. It is computed as the geometric mean of normalised indices for these three dimensions. The index has been inverted (1 − GII) so that, as with every other index in this tool, higher values represent a better outcome, in this case greater gender equality.`,
+  source: `<strong>Source:</strong> UNDP, Human Development Report 2025. Values are transformed as 1 − GII from the original index.<br>
+  <strong>Webpage:</strong> Consult the <a href="https://hdr.undp.org/data-center/documentation-and-downloads" target="_blank" rel="noopener noreferrer">source page</a> for more information.<br>
+  <strong>Download date:</strong> 13 August 2026.<br>
+  <strong>Area names:</strong> Harmonised to follow the <a href="https://unstats.un.org/unsd/methodology/m49/" target="_blank" rel="noopener noreferrer">UNSD M49 standard</a>.`,
+  format: v => v.toFixed(3)
+}
+];
+
+for (const v of VARIABLES){
+  v.windows = v.windows || [1, 3, 5, 10];
+  v.areaTypes = v.areaTypes || ['country', 'benchmark', 'world'];
+}
+
+// Order the groups appear in the picker, independent of the order of VARIABLES.
+// A category with no variable in it is skipped rather than rendered empty.
+const CATEGORY_ORDER = ['Economic', 'Health', 'Education', 'Index'];
+
+let DATASET = VARIABLES[0];
+
+const TARGET_TYPES = [
+  { key: 'benchmark', label: 'Benchmark', areaTypes: ['benchmark'], fromVariable: 'benchmarkDefault' },
+  { key: 'country',   label: 'Country',   areaTypes: ['country', 'world'],
+    preferred: ['France', 'United States of America', 'United Kingdom of Great Britain and Northern Ireland', 'Germany'] },
+  { key: 'world',     label: 'World',     areaTypes: ['world'],     preferred: ['World'] }
+];
+
+const BENCHMARK_ORDER = [
+  'High income',
+  'Upper middle income',
+  'Middle income',
+  'Lower middle income',
+  'Low income',
+  'Very high human development',
+  'High human development',
+  'Medium human development',
+  'Low human development'
+];
+
+const THE_NAMES = new Set([
+  'Bahamas',
+  'Cayman Islands',
+  'Central African Republic',
+  'Comoros',
+  "Democratic People's Republic of Korea",
+  'Democratic Republic of the Congo',
+  'Dominican Republic',
+  'Faroe Islands',
+  'Gambia',
+  "Lao People's Democratic Republic",
+  'Maldives',
+  'Marshall Islands',
+  'Netherlands (Kingdom of the)',
+  'Philippines',
+  'Republic of Korea',
+  'Republic of Moldova',
+  'Russian Federation',
+  'Solomon Islands',
+  'Syrian Arab Republic',
+  'Turks and Caicos Islands',
+  'United Arab Emirates',
+  'United Kingdom of Great Britain and Northern Ireland',
+  'United Republic of Tanzania',
+  'United States of America'
+]);
+
+function withArticle(name){ return THE_NAMES.has(name) ? `the ${name}` : name; }
+
+function possessive(label){ return label.endsWith('s') ? `${label}'` : `${label}'s`; }
+
+const COMPARE_AREA_TYPES = ['country', 'world'];
+
+const SCENARIOS = [
+  { key: 'static',  label: 'Static scenario' },
+  { key: 'dynamic', label: 'Dynamic scenario',
+    unavailable: () => DATASET.bounded,
+    reason: () => `Not applicable: ${DATASET.short} is capped at 1 by construction, so constant-rate extrapolation is not meaningful.` }
+];
+
+const DESC_VIEWS = [
+  { key: 'definition', label: 'Definition' },
+  { key: 'source',     label: 'Source' }
+];
+
+let BASE_YEAR = 2023;
+
+const MAX_SELECTED = 7;
+
+let DATA = [];
+let state = {
+  target: null,
+  raw: false,
+  desc: 'definition',
+  targetType: 'country',
+  n: 10,
+  selected: [],
+  view: 'table',
+  mode: 'static',
+  search: ''
+};
+
+function nf(x, digits=0){ return new Intl.NumberFormat('en-US', {maximumFractionDigits:digits}).format(x); }
+function byName(name){ return DATA.find(d => d.country === name); }
+function fmt(v){ return DATASET.format(v); }
+
+function applyBaseYear(){
+  document.querySelectorAll('.js-base-year').forEach(el => { el.textContent = BASE_YEAR; });
+}
+
+function renderVariableField(){
+  const groups = new Map();
+  for (const v of VARIABLES){
+    if (!groups.has(v.category)) groups.set(v.category, []);
+    groups.get(v.category).push(v);
+  }
+  const orderedCategories = CATEGORY_ORDER.filter(c => groups.has(c));
+  document.getElementById('variableSelect').innerHTML = orderedCategories.map(cat =>
+    `<optgroup label="${cat}">` +
+    groups.get(cat).map(v =>
+      `<option value="${v.key}"${v.key === DATASET.key ? ' selected' : ''}>${v.label}</option>`
+    ).join('') +
+    `</optgroup>`
+  ).join('');
+  renderVariableDesc();
+}
+
+function renderVariableDesc(){
+  document.getElementById('descSwitch').innerHTML = DESC_VIEWS.map(v =>
+    `<button type="button" class="desc-opt" data-desc="${v.key}" aria-pressed="${v.key === state.desc}">${v.label}</button>`
+  ).join('<span class="desc-sep" aria-hidden="true">·</span>');
+  document.getElementById('variableDesc').innerHTML = DATASET[state.desc] || '';
+  lockDescHeight();
+}
+
+function lockDescHeight(){
+  const el = document.getElementById('variableDesc');
+  const shown = el.innerHTML;
+  el.style.minHeight = '0px';
+  let tallest = 0;
+  for (const v of DESC_VIEWS){
+    el.innerHTML = DATASET[v.key] || '';
+    tallest = Math.max(tallest, el.getBoundingClientRect().height);
+  }
+  el.innerHTML = shown;
+  el.style.minHeight = tallest ? Math.ceil(tallest) + 'px' : '';
+}
+
+function renderTargetTypeButtons(){
+  document.getElementById('targetTypeSegment').innerHTML = TARGET_TYPES.map(t =>
+    `<button data-target-type="${t.key}"${t.key === state.targetType ? ' class="active"' : ''}>${t.label}</button>`
+  ).join('');
+}
+
+function scenarioDef(key){ return SCENARIOS.find(sc => sc.key === key); }
+
+function enforceScenario(){
+  const sc = scenarioDef(state.mode);
+  if (sc && sc.unavailable && sc.unavailable()) state.mode = 'static';
+}
+
+const INCOME_ADJECTIVES = {
+  'Low income': 'low-income',
+  'Lower middle income': 'lower-middle-income',
+  'Middle income': 'middle-income',
+  'Upper middle income': 'upper-middle-income',
+  'High income': 'high-income'
+};
+
+function benchmarkPhrase(name){
+  const adj = INCOME_ADJECTIVES[name];
+  if (adj) return { text: `${adj} countries` };
+  return { text: `${name.charAt(0).toLowerCase() + name.slice(1)} countries` };
+}
+
+function targetPhrase(){
+  const d = byName(state.target);
+  if (!d) return null;
+  const level = who => `${who} ${BASE_YEAR} ${shortInProse()} level`;
+
+  if (d.areaType === 'world'){
+    return { title: 'the world average', subject: 'the world', verb: 'keeps', its: 'its',
+             level: level(`the world's average`) };
+  }
+  if (d.areaType === 'benchmark'){
+    const g = benchmarkPhrase(d.country);
+    return { title: g.text, subject: g.text, verb: 'keep', its: 'their',
+             level: level(possessive(g.text)) };
+  }
+  const n = withArticle(d.country);
+  return { title: n, subject: n, verb: 'keeps', its: 'its', level: level(possessive(n)) };
+}
+
+function renderResultsTitle(){
+  const t = targetPhrase();
+  document.getElementById('resultsTitle').textContent =
+    `Years needed to close the gap${t ? ` with ${t.title}` : ''}`;
+}
+
+function renderModeButtons(){
+  document.getElementById('modeSegment').innerHTML = SCENARIOS.map(sc => {
+    const off = sc.unavailable && sc.unavailable();
+    return `<button data-mode="${sc.key}"${sc.key === state.mode ? ' class="active"' : ''}` +
+           `${off ? ` disabled title="${sc.reason()}"` : ''}>${sc.label}</button>`;
+  }).join('');
+}
+
+function renderWindowButtons(){
+  document.getElementById('nSegment').innerHTML = DATASET.windows.map(n =>
+    `<button data-n="${n}"${n === state.n ? ' class="active"' : ''}>${n} year${n > 1 ? 's' : ''}</button>`
+  ).join('');
+}
+
+function niceLogTicks(min, max, count){
+  if (!(min > 0) || !(max > min)) return [];
+  const NICE = [1, 1.5, 2, 2.5, 3, 4, 5, 6, 8];
+  const candidates = [];
+  for (let e = Math.floor(Math.log10(min)); e <= Math.ceil(Math.log10(max)); e++){
+    for (const m of NICE){
+      const v = m * Math.pow(10, e);
+      if (v >= min * 0.999 && v <= max * 1.001) candidates.push(v);
+    }
+  }
+  if (!candidates.length) return [min, max];
+  const lo = Math.log10(min), hi = Math.log10(max);
+  const picked = [];
+  for (let k = 0; k < count; k++){
+    const target = lo + (hi - lo) * (k / (count - 1));
+    let best = null, bestDist = Infinity;
+    for (const c of candidates){
+      const dist = Math.abs(Math.log10(c) - target);
+      if (dist < bestDist && !picked.includes(c)){ best = c; bestDist = dist; }
+    }
+    if (best !== null) picked.push(best);
+  }
+  return picked.sort((a, b) => a - b);
+}
+
+function tStatic(a, b){
+  if (a.value >= b.value) return 0;
+  const g = a.g[state.n];
+  if (g === null || g === undefined || isNaN(g)) return undefined;
+  const t = Math.log(b.value / a.value) / Math.log(1 + g);
+  if (t <= 0 || !isFinite(t)) return null;
+  return t;
+}
+function tDynamic(a, b){
+  if (a.value >= b.value) return 0;
+  const ga = a.g[state.n], gb = b.g[state.n];
+  if ([ga,gb].some(v => v === null || v === undefined || isNaN(v))) return undefined;
+  const ratio = (1 + ga) / (1 + gb);
+  if (ratio <= 1) return null;
+  const t = Math.log(b.value / a.value) / Math.log(ratio);
+  if (t <= 0 || !isFinite(t)) return null;
+  return t;
+}
+function yearsStatic(a, b){ const t = tStatic(a, b); return typeof t === 'number' ? Math.ceil(t) : t; }
+function yearsDynamic(a, b){ const t = tDynamic(a, b); return typeof t === 'number' ? Math.ceil(t) : t; }
+
+function targetTypeDef(){ return TARGET_TYPES.find(t => t.key === state.targetType) || TARGET_TYPES[0]; }
+function byArea(types){
+  return DATA.filter(d => types.includes(d.areaType)).sort((a, b) => {
+    const ia = BENCHMARK_ORDER.indexOf(a.country);
+    const ib = BENCHMARK_ORDER.indexOf(b.country);
+    if (ia !== -1 && ib !== -1) return ia - ib;
+    if (ia !== -1) return -1;
+    if (ib !== -1) return 1;
+    return a.country.localeCompare(b.country);
+  });
+}
+function targetPool(){ return byArea(targetTypeDef().areaTypes); }
+function comparePool(){ return byArea(COMPARE_AREA_TYPES); }
+
+function preferredTargets(def){
+  return def.fromVariable ? [DATASET[def.fromVariable]].filter(Boolean) : (def.preferred || []);
+}
+
+function pickTarget(){
+  const pool = targetPool();
+  const found = preferredTargets(targetTypeDef()).find(name => pool.some(d => d.country === name && d.value));
+  state.target = found || (pool[0] && pool[0].country) || null;
+  state.selected = state.selected.filter(n => n !== state.target);
+}
+
+function populateSelects(){
+  const targetSelect = document.getElementById('targetSelect');
+  targetSelect.innerHTML = targetPool().map(d =>
+    `<option value="${d.country}" ${d.country===state.target?'selected':''}>${d.country}</option>`
+  ).join('');
+
+  const checksWrap = document.getElementById('countryChecks');
+  const term = state.search.trim().toLowerCase();
+  checksWrap.innerHTML = comparePool()
+    .filter(d => d.country !== state.target)
+    .filter(d => !term || d.country.toLowerCase().includes(term))
+    .map(d => {
+    const checked = state.selected.includes(d.country);
+    const disable = (!checked && state.selected.length >= MAX_SELECTED) ? 'disabled' : '';
+    return `<label class="chk">
+      <input type="checkbox" value="${d.country}" ${checked?'checked':''} ${disable}>
+      <span>${d.country}</span>
+    </label>`;
+  }).join('');
+  renderSelectedChips();
+  renderTargetReadout();
+}
+
+function renderTargetFiguresTip(range){
+  const t = targetPhrase();
+  if (!t){ document.getElementById('targetFiguresTip').textContent = ''; return; }
+  document.getElementById('targetFiguresTip').textContent =
+    `Shows ${t.level}. It corresponds to the level comparison countries must reach to have closed the gap in the ` +
+    `static scenario. ${sentenceCase(t.its)} average annual growth rate over the last ${state.n} ` +
+    `year${state.n > 1 ? 's' : ''} (${range}) is shown alongside. This growth rate is used only in the dynamic ` +
+    `scenario, where ${t.subject} ${t.verb} growing at ${t.its} own rate alongside the comparison countries.`;
+}
+
+function renderTargetReadout(){
+  const t = byName(state.target);
+  const el = document.getElementById('targetReadout');
+  const labelEl = document.getElementById('targetFiguresLabel');
+  const range = `${BASE_YEAR - state.n}–${BASE_YEAR}`;
+  document.getElementById('targetFiguresName').textContent = t ? t.country : 'Target';
+  document.getElementById('targetFiguresRange').textContent = range;
+  renderTargetFiguresTip(range);
+  labelEl.title = t ? `${t.country} snapshot (${range})` : '';
+  if (!t){ el.textContent = 'No target available.'; return; }
+  const g = t.g[state.n];
+  const gLabel = (g === null || g === undefined || isNaN(g)) ? 'no data' : (g*100).toFixed(1) + '%';
+  el.title = `${BASE_YEAR} level: ${fmt(t.value)} · Avg. growth: ${gLabel}`;
+  el.innerHTML =
+    `<span class="readout-key">${BASE_YEAR} level:</span> <span class="readout-val">${fmt(t.value)}</span>` +
+    `<span class="readout-sep" aria-hidden="true">·</span>` +
+    `<span class="readout-key">Avg. growth:</span> <span class="readout-val">${gLabel}</span>`;
+}
+
+function renderSelectedChips(){
+  document.getElementById('selectedLabel').textContent =
+    `Selected countries (${state.selected.length} / ${MAX_SELECTED})`;
+  const ordered = [...state.selected].sort((a,b) => a.localeCompare(b));
+  document.getElementById('selectedChips').innerHTML = ordered.length
+    ? ordered.map(name => `<button type="button" class="sel-chip" data-name="${name}" title="Remove ${name}" aria-label="Remove ${name}">${name}<span class="x" aria-hidden="true">✕</span></button>`).join('')
+    : `<span class="selected-empty">None yet. Pick from the list below.</span>`;
+}
+
+function yearsCell(y){
+  if (y === undefined) return `<span class="badge-never">no data</span>`;
+  if (y === null) return `<span class="badge-never">never</span>`;
+  if (y === 0) return `<span class="badge-years">already ahead</span>`;
+  return `<span class="badge-years">${nf(y)}</span>`;
+}
+
+function renderTable(){
+  const target = byName(state.target);
+  const tbody = document.getElementById('tableBody');
+  const ordered = [...state.selected].sort((a,b) => a.localeCompare(b));
+  document.getElementById('nRangeLabel').textContent = `${BASE_YEAR - state.n}–${BASE_YEAR}`;
+  document.getElementById('valueHeader').innerHTML = `${DATASET.short} in <br> ${BASE_YEAR}`;
+  tbody.innerHTML = ordered.map(name => {
+    const c = byName(name);
+    const ys = yearsStatic(c, target);
+    const yd = yearsDynamic(c, target);
+    const g = c.g[state.n];
+    const gCell = (g === null || g === undefined || isNaN(g)) ? 'no data' : (g*100).toFixed(1) + '%';
+    return `<tr>
+      <td class="country-cell">${c.country}</td>
+      <td class="num">${fmt(c.value)}</td>
+      <td class="num">${gCell}</td>
+      <td class="num">${yearsCell(ys)}</td>
+      <td class="num">${yearsCell(yd)}</td>
+    </tr>`;
+  }).join('');
+
+  renderAutoRead(target, ordered);
+}
+
+function yearsSpan(y){ return `<span class="years">${nf(y)}</span>`; }
+
+function joinNames(items){
+  if (items.length === 1) return items[0];
+  if (items.length === 2) return items.join(' and ');
+  return items.slice(0, -1).join(', ') + ', and ' + items[items.length - 1];
+}
+function joinClauses(items){
+  if (items.length === 1) return items[0];
+  return items.slice(0, -1).join(', ') + ', and ' + items[items.length - 1];
+}
+
+function countrySpan(name){
+  const d = byName(name);
+  if (d && d.areaType === 'benchmark') return benchmarkPhrase(name).text;
+  if (d && d.areaType === 'world') return 'the world';
+  return withArticle(name);
+}
+
+function shortInProse(){
+  const t = DATASET.short, first = t.split(' ')[0];
+  return first === first.toUpperCase() ? t : t.charAt(0).toLowerCase() + t.slice(1);
+}
+
+function sentenceCase(t){ return t.charAt(0).toUpperCase() + t.slice(1); }
+
+function areaPossessive(name){ return possessive(countrySpan(name)); }
+
+function aggregateAdj(name){
+  const d = byName(name);
+  return (d && d.areaType !== 'country') ? 'aggregate ' : '';
+}
+function autoReadRow(label, html){
+  return `<li class="auto-read-row"><span class="auto-read-label">${label}</span> ${html}</li>`;
+}
+
+function targetGrowthLabel(target){
+  const g = target.g[state.n];
+  return (g === null || g === undefined || isNaN(g)) ? 'no data' : (g * 100).toFixed(1) + '%';
+}
+
+function scenarioSentence(kind, target, orderedNames){
+  const rows = orderedNames.map(name => {
+    const c = byName(name);
+    const y = kind === 'static' ? yearsStatic(c, target) : yearsDynamic(c, target);
+    return { c, y };
+  });
+
+  if (rows.length === 0){
+    return 'Select at least one comparison country to see an automatic read of the results.';
+  }
+
+  const finite = rows.filter(r => typeof r.y === 'number' && r.y > 0).sort((a, b) => a.y - b.y);
+  const already = rows.filter(r => r.y === 0);
+  const never = rows.filter(r => r.y === null);
+  const sentences = [];
+
+  if (already.length){
+    const names = joinNames(already.map(r => countrySpan(r.c.country)));
+    sentences.push(`${sentenceCase(names)} ${already.length > 1 ? 'have' : 'has'} already closed the gap.`);
+  }
+
+  if (finite.length){
+    const tp = targetPhrase();
+    const intro = kind === 'static'
+      ? `Assuming ${areaPossessive(target.country)} ${aggregateAdj(target.country)}${shortInProse()} is held fixed at its ${BASE_YEAR} level (${fmt(target.value)})`
+      : `Assuming ${tp.subject} also ${tp.verb} growing at ${tp.its} own rate (${targetGrowthLabel(target)})`;
+    const first = finite[0], rest = finite.slice(1);
+    if (rest.length === 0){
+      sentences.push(`${intro}, ${countrySpan(first.c.country)} would close the gap in ${yearsSpan(first.y)} years (by ${BASE_YEAR + first.y}).`);
+    } else {
+      const restClauses = rest.map(r => `${countrySpan(r.c.country)} in ${yearsSpan(r.y)} years (by ${BASE_YEAR + r.y})`);
+      sentences.push(`${intro}, ${countrySpan(first.c.country)} would close the gap the fastest, requiring ${yearsSpan(first.y)} years (by ${BASE_YEAR + first.y}).`);
+      sentences.push(`It will be followed by ${joinClauses(restClauses)}.`);
+    }
+  }
+
+  if (never.length){
+    const names = joinNames(never.map(r => countrySpan(r.c.country)));
+    // Naming the target beats "the target's": the reader does not have to hold
+    // the selection in their head to make sense of the sentence.
+    const t = targetPhrase();
+    const whose = never.length > 1 ? 'their' : 'its';
+    const reason = kind === 'static'
+      ? `${whose} growth rate is not positive`
+      : `${whose} growth rate is lower than that of ${t ? t.subject : 'the target'}`;
+    sentences.push(`${sentenceCase(names)} would <span class="never">never</span> close the gap at this pace, as ${reason}.`);
+  }
+
+  return sentences.length
+    ? sentences.join(' ')
+    : `No ${kind}-scenario catch-up data is available for the ${state.n}-year growth window with the current selection.`;
+}
+
+function renderAutoRead(target, orderedNames){
+  const rows = [
+    autoReadRow('Static scenario:', scenarioSentence('static', target, orderedNames)),
+    autoReadRow('Dynamic scenario:', scenarioSentence('dynamic', target, orderedNames))
+  ];
+  document.getElementById('autoRead').innerHTML = `<ul class="auto-read-list">${rows.join('')}</ul>`;
+}
+
+const PALETTE = ['#B8863A', '#A83E32', '#128F76', '#1F4FA8', '#A15BC2', '#7E9622', '#C2447A'];
+const TARGET_COLOR = '#16213E';
+
+const seriesCache = new Map();
+let seriesLoading = null;
+
+function setRawStatus(msg, isError){
+  const el = document.getElementById('rawStatus');
+  el.textContent = msg || '';
+  el.classList.toggle('hidden', !msg);
+  el.classList.toggle('error', !!isError);
+  document.getElementById('rawChart').classList.toggle('hidden', !!msg);
+  document.getElementById('rawNote').classList.toggle('hidden', !!msg);
+}
+
+function loadSeries(done){
+  const def = DATASET;
+  if (seriesCache.has(def.key)){ done(); return; }
+  if (seriesLoading === def.key) return;
+  seriesLoading = def.key;
+  setRawStatus(`Loading the observed ${def.short} series\u2026`);
+  Papa.parse(def.series, {
+    download: true,
+    header: true,
+    dynamicTyping: true,
+    skipEmptyLines: true,
+    complete: function(results){
+      const byArea = new Map();
+      for (const r of results.data){
+        if (!r.area_name || !Number.isFinite(r.year) || !Number.isFinite(r[def.key])) continue;
+        if (!byArea.has(r.area_name)) byArea.set(r.area_name, new Map());
+        byArea.get(r.area_name).set(r.year, r[def.key]);
+      }
+      seriesLoading = null;
+      if (byArea.size === 0){
+        setRawStatus(`No series found in ${def.series}.`, true);
+        return;
+      }
+      seriesCache.set(def.key, byArea);
+      if (DATASET.key === def.key) done();
+    },
+    error: function(err){
+      seriesLoading = null;
+      setRawStatus(`Could not load ${def.series} (${err}).`, true);
+    }
+  });
+}
+
+let rawChartInstance = null;
+function renderRawChart(){
+  const seriesData = seriesCache.get(DATASET.key);
+  if (!seriesData){ loadSeries(renderRawChart); return; }
+  setRawStatus('');
+
+  const target = byName(state.target);
+  const orderedNames = [...state.selected].sort((a,b) => a.localeCompare(b));
+  const lines = [{ name: target && target.country, color: TARGET_COLOR, dash: [7,4], width: 3.5 }]
+    .concat(orderedNames.map((n, i) => ({ name: n, color: PALETTE[i % PALETTE.length], dash: undefined, width: 3 })))
+    .filter(l => l.name && seriesData.has(l.name));
+
+  if (lines.length === 0){
+    setRawStatus('No observed series available for the current selection.', true);
+    return;
+  }
+
+  let lo = Infinity, hi = -Infinity;
+  for (const l of lines){
+    for (const y of seriesData.get(l.name).keys()){
+      if (y > BASE_YEAR) continue;
+      if (y < lo) lo = y;
+      if (y > hi) hi = y;
+    }
+  }
+  if (!isFinite(lo)){
+    setRawStatus(`No observed values up to ${BASE_YEAR} for the current selection.`, true);
+    return;
+  }
+  const years = [];
+  for (let y = lo; y <= hi; y++) years.push(y);
+
+  const datasets = lines.map((l, i) => {
+    const m = seriesData.get(l.name);
+    return {
+      data: years.map(y => ({ x: y, y: m.has(y) ? m.get(y) : null })),
+      label: l.name + (i === 0 ? ' (target)' : ''),
+      borderColor: l.color,
+      borderDash: l.dash,
+      borderWidth: l.width,
+      pointRadius: 0,
+      spanGaps: false,
+      tension: 0
+    };
+  });
+
+  document.getElementById('rawNote').textContent =
+  `Note: ${DATASET.short} as reported by the source, on the same log vertical axis as the projection chart. Both charts stop at ${BASE_YEAR}, and colours match between them.`;
+
+  const ctx = document.getElementById('rawChart').getContext('2d');
+  if (rawChartInstance) rawChartInstance.destroy();
+  rawChartInstance = new Chart(ctx, {
+    type: 'line',
+    data: { datasets },
+    options: {
+      responsive: true,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: { font: { family: 'IBM Plex Sans', size: 11 }, color: '#5B5F6B', boxWidth: 14 }
+        },
+        tooltip: {
+          callbacks: {
+            title: items => (items.length ? String(Math.round(items[0].parsed.x)) : ''),
+            label: ctx => `${ctx.dataset.label}: ${fmt(ctx.parsed.y)}`
+          }
+        }
+      },
+      scales: {
+        x: {
+          type: 'linear',
+          min: lo,
+          max: hi,
+          title: { display: true, text: 'Year', font: { family: 'IBM Plex Mono', size: 11 }, padding: { top: 14 } },
+          grid: { color: '#D9D5C9' },
+          ticks: { font: { family: 'IBM Plex Sans', size: 11 }, precision: 0, callback: v => String(v) }
+        },
+        y: {
+          type: 'logarithmic',
+          title: { display: true, text: DATASET.label, font: { family: 'IBM Plex Mono', size: 11 }, padding: { bottom: 14 } },
+          grid: { color: '#D9D5C9' },
+          afterBuildTicks: axis => {
+            const ticks = niceLogTicks(axis.min, axis.max, 7);
+            if (ticks.length) axis.ticks = ticks.map(v => ({ value: v }));
+          },
+          ticks: { font: { family: 'IBM Plex Sans', size: 11 }, callback: v => fmt(v) }
+        }
+      }
+    }
+  });
+}
+
+let chartInstance = null;
+function renderChart(){
+  const target = byName(state.target);
+  const orderedNames = [...state.selected].sort((a,b) => a.localeCompare(b));
+  const countries = orderedNames.map(n => byName(n));
+
+  const crossings = countries.map(c =>
+    state.mode === 'static' ? tStatic(c, target) : tDynamic(c, target)
+  );
+  const finite = crossings.filter(y => typeof y === 'number' && y > 0);
+  const horizon = finite.length ? Math.ceil(Math.max(...finite)) : 50;
+
+  const years = Array.from({length: horizon + 1}, (_, i) => i);
+  const tg = target.g[state.n] || 0;
+  const targetSeries = years.map(y => ({
+    x: y,
+    y: state.mode === 'static' ? target.value : target.value * Math.pow(1 + tg, y)
+  }));
+
+  const datasets = [{
+    label: `${target.country} (target)`,
+    data: targetSeries,
+    borderColor: TARGET_COLOR,
+    borderWidth: 3.5,
+    borderDash: [7,4],
+    pointRadius: 0,
+    tension: 0
+  }];
+
+  countries.forEach((c, i) => {
+    const crossing = crossings[i];
+    const g = c.g[state.n] || 0;
+    const stopYear = (typeof crossing === 'number' && crossing > 0) ? crossing : null;
+    const level = y => c.value * Math.pow(1 + g, y);
+    const series = years.filter(y => stopYear === null || y <= stopYear).map(y => ({x: y, y: level(y)}));
+    if (stopYear !== null && stopYear > series[series.length - 1].x){
+      series.push({x: stopYear, y: level(stopYear)});
+    }
+    datasets.push({
+      label: c.country + (crossing === null ? ' (never catches up)' : ''),
+      data: series,
+      borderColor: PALETTE[i % PALETTE.length],
+      borderWidth: 3,
+      pointRadius: 0,
+      tension: 0
+    });
+  });
+
+  const ctx = document.getElementById('chart').getContext('2d');
+  if (chartInstance) chartInstance.destroy();
+  chartInstance = new Chart(ctx, {
+    type: 'line',
+    data: { datasets },
+    options: {
+      responsive: true,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: { font: { family: 'IBM Plex Sans', size: 11 }, color: '#5B5F6B', boxWidth: 14 }
+        },
+        tooltip: {
+          callbacks: {
+            title: items => {
+              const y = Math.round(items[0].parsed.x);
+              if (!Number.isFinite(y)) return '';
+              if (y === 0) return `In ${BASE_YEAR} (starting point)`;
+              return `After ${nf(y)} year${y > 1 ? 's' : ''} from ${BASE_YEAR} (${BASE_YEAR + y})`;
+            },
+            label: ctx => `${ctx.dataset.label}: ${fmt(ctx.parsed.y)}`
+          }
+        }
+      },
+      scales: {
+        x: {
+          type: 'linear',
+          min: 0,
+          max: horizon,
+          title: { display: true, text: `Number of years from ${BASE_YEAR} required to catch up with the target country`, font: { family: 'IBM Plex Mono', size: 11 }, padding: { top: 14 } },
+          grid: { color: '#D9D5C9' },
+          ticks: { font: { family: 'IBM Plex Sans', size: 11 }, precision: 0 }
+        },
+        y: {
+          type: 'logarithmic',
+          title: { display: true, text: DATASET.label, font: { family: 'IBM Plex Mono', size: 11 }, padding: { bottom: 14 } },
+          grid: { color: '#D9D5C9' },
+          afterBuildTicks: axis => {
+            const ticks = niceLogTicks(axis.min, axis.max, 7);
+            if (ticks.length) axis.ticks = ticks.map(v => ({ value: v }));
+          },
+          ticks: { font: { family: 'IBM Plex Sans', size: 11 }, callback: v => fmt(v) }
+        }
+      }
+    }
+  });
+}
+
+function mountAutoRead(){
+  const panel = document.getElementById('autoReadPanel');
+  const target = (state.raw || state.view === 'table')
+    ? document.getElementById('autoReadTableSlot')
+    : document.getElementById('graphPanel');
+  if (panel.parentElement !== target) target.appendChild(panel);
+}
+
+function renderAll(){
+  renderResultsTitle();
+  enforceScenario();
+  renderModeButtons();
+  populateSelects();
+  renderTable();
+  mountAutoRead();
+  document.getElementById('tableView').classList.toggle('hidden', state.raw || state.view !== 'table');
+  document.getElementById('graphView').classList.toggle('hidden', state.raw || state.view !== 'graph');
+  document.getElementById('rawView').classList.toggle('hidden', !state.raw);
+  document.getElementById('rawToggle').textContent =
+    state.raw ? 'Back to convergence results' : 'View raw historical series';
+  if (state.raw) renderRawChart();
+  else if (state.view === 'graph') renderChart();
+}
+
+function collapseAutoRead(){
+  const btn = document.getElementById('autoReadToggle');
+  if (btn.getAttribute('aria-expanded') !== 'true') return;
+  btn.setAttribute('aria-expanded', 'false');
+  document.getElementById('autoRead').hidden = true;
+  btn.querySelector('.auto-read-toggle-text').textContent = 'Click to expand the interpretation of these results.';
+}
+
+function wireEvents(){
+  document.getElementById('autoReadToggle').addEventListener('click', e => {
+    const btn = e.currentTarget;
+    const expanded = btn.getAttribute('aria-expanded') === 'true';
+    btn.setAttribute('aria-expanded', String(!expanded));
+    document.getElementById('autoRead').hidden = expanded;
+    btn.querySelector('.auto-read-toggle-text').textContent = expanded
+      ? 'Click to expand the interpretation of these results.'
+      : 'Click to collapse the interpretation of these results.';
+  });
+  document.getElementById('targetTypeSegment').addEventListener('click', e => {
+    const btn = e.target.closest('button');
+    if (!btn || btn.dataset.targetType === state.targetType) return;
+    state.targetType = btn.dataset.targetType;
+    renderTargetTypeButtons();
+    pickTarget();
+    collapseAutoRead();
+    renderAll();
+  });
+  document.getElementById('targetSelect').addEventListener('change', e => {
+    state.target = e.target.value;
+    state.selected = state.selected.filter(n => n !== state.target);
+    collapseAutoRead();
+    renderAll();
+  });
+  document.getElementById('nSegment').addEventListener('click', e => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    state.n = parseInt(btn.dataset.n, 10);
+    document.querySelectorAll('#nSegment button').forEach(b => b.classList.toggle('active', b === btn));
+    renderAll();
+  });
+  document.getElementById('selectedChips').addEventListener('click', e => {
+    const chip = e.target.closest('.sel-chip');
+    if (!chip) return;
+    state.selected = state.selected.filter(n => n !== chip.dataset.name);
+    collapseAutoRead();
+    renderAll();
+  });
+  document.getElementById('countryChecks').addEventListener('change', e => {
+    const name = e.target.value;
+    if (e.target.checked) {
+      if (state.selected.length < MAX_SELECTED) state.selected.push(name);
+    } else {
+      state.selected = state.selected.filter(n => n !== name);
+    }
+    collapseAutoRead();
+    renderAll();
+  });
+  document.getElementById('countrySearch').addEventListener('input', e => {
+    state.search = e.target.value;
+    populateSelects();
+  });
+  document.getElementById('resetCountries').addEventListener('click', () => {
+    state.selected = [];
+    collapseAutoRead();
+    renderAll();
+  });
+  document.getElementById('variableSelect').addEventListener('change', e => {
+    switchVariable(e.target.value);
+  });
+  document.getElementById('descSwitch').addEventListener('click', e => {
+    const btn = e.target.closest('button');
+    if (!btn || btn.dataset.desc === state.desc) return;
+    state.desc = btn.dataset.desc;
+    renderVariableDesc();
+  });
+  let descResizeQueued = false;
+  window.addEventListener('resize', () => {
+    if (descResizeQueued) return;
+    descResizeQueued = true;
+    requestAnimationFrame(() => { descResizeQueued = false; lockDescHeight(); });
+  });
+  document.getElementById('rawToggle').addEventListener('click', () => {
+    state.raw = !state.raw;
+    renderAll();
+  });
+  document.getElementById('viewToggle').addEventListener('click', e => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    state.raw = false;
+    state.view = btn.dataset.view;
+    document.querySelectorAll('#viewToggle button').forEach(b => b.classList.toggle('active', b === btn));
+    renderAll();
+  });
+  document.getElementById('modeSegment').addEventListener('click', e => {
+    const btn = e.target.closest('button');
+    if (!btn || btn.disabled) return;
+    state.mode = btn.dataset.mode;
+    renderModeButtons();
+    renderChart();
+  });
+}
+
+function seedSelection(){
+  const pool = comparePool();
+  const suggested = ['Algeria', 'China', 'Colombia', 'Egypt', 'Mexico', 'Uruguay'];
+  state.selected = suggested.filter(name => pool.some(d => d.country === name) && name !== state.target).slice(0, MAX_SELECTED);
+  if (state.selected.length === 0) {
+    state.selected = pool.filter(d => d.country !== state.target).slice(0, 3).map(d => d.country);
+  }
+}
+
+function pickDefaults(){
+  if (!DATASET.windows.includes(state.n)) state.n = DATASET.windows[DATASET.windows.length - 1];
+
+  pickTarget();
+  seedSelection();
+}
+
+const dataCache = new Map();
+
+function setLoading(msg, isError){
+  const el = document.getElementById('loadingStatus');
+  el.textContent = msg || '';
+  el.classList.toggle('hidden', !msg);
+  el.classList.toggle('error', !!isError);
+}
+
+function loadVariable(def, done, fail){
+  if (dataCache.has(def.key)){
+    DATA = dataCache.get(def.key);
+    BASE_YEAR = Number(DATA[0].year) || BASE_YEAR;
+    applyBaseYear();
+    done();
+    return;
+  }
+  setLoading(`Loading ${def.short}\u2026`);
+  Papa.parse(def.csv, {
+    download: true,
+    header: true,
+    dynamicTyping: true,
+    skipEmptyLines: true,
+    complete: function(results) {
+      const rows = results.data
+        .filter(r => r.area_name && def.areaTypes.includes(r.area_type) && Number.isFinite(r[def.key]))
+        .map(r => ({
+          iso3: r.iso3,
+          country: r.area_name,
+          areaType: r.area_type,
+          year: r.year_latest_value,
+          value: r[def.key],
+          g: Object.fromEntries(def.windows.map(n => [n, r[`gr_${def.key}_P${n}`]]))
+        }));
+
+      if (rows.length === 0){
+        setLoading(`No data found in ${def.csv}. Check the file is where expected and carries the columns area_name, ${def.key} and gr_${def.key}_P<n>.`, true);
+        if (fail) fail();
+        return;
+      }
+
+      dataCache.set(def.key, rows);
+      if (DATASET.key !== def.key) return;
+      DATA = rows;
+      BASE_YEAR = Number(rows[0].year) || BASE_YEAR;
+      applyBaseYear();
+      setLoading('');
+      done();
+    },
+    error: function(err) {
+      setLoading(`Could not load ${def.csv} (` + err + '). If you are opening this file directly from disk, browsers block local file loading — run a local server (e.g. "python -m http.server") or host it on GitHub Pages.', true);
+      if (fail) fail();
+    }
+  });
+}
+
+function reconcileSelection(){
+  if (!DATASET.windows.includes(state.n)) state.n = DATASET.windows[DATASET.windows.length - 1];
+
+  const pool = new Set(comparePool().map(d => d.country));
+  state.selected = state.selected.filter(n => pool.has(n));
+
+  const targets = targetPool();
+  if (!state.target || !targets.some(d => d.country === state.target)) pickTarget();
+  state.selected = state.selected.filter(n => n !== state.target);
+
+  if (state.selected.length === 0) seedSelection();
+}
+
+function switchVariable(key){
+  const def = VARIABLES.find(v => v.key === key);
+  if (!def || def.key === DATASET.key) return;
+  const previous = DATASET;
+  DATASET = def;
+  loadVariable(def, () => {
+    reconcileSelection();
+    renderVariableField();
+    renderTargetTypeButtons();
+    renderWindowButtons();
+    collapseAutoRead();
+    renderAll();
+  }, () => {
+    DATASET = previous;
+    renderVariableField();
+  });
+}
+
+loadVariable(DATASET, () => {
+  pickDefaults();
+  renderVariableField();
+  renderTargetTypeButtons();
+  renderWindowButtons();
+  document.getElementById('appRoot').classList.remove('hidden');
+  wireEvents();
+  renderAll();
+});
+</script>
+</body>
+</html>
